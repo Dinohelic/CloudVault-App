@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.cloudvault.app.ui.theme.CloudVaultTheme
+import com.cloudvault.app.ui.screens.DashboardScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CloudVaultTheme {
-                AuthScreen()
+                DashboardScreen()
             }
         }
     }
