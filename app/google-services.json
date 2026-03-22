@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "736541752851",
+    "project_id": "ccdrive-5a5c7",
+    "storage_bucket": "ccdrive-5a5c7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736541752851:android:5cddb8b960be6cd45149e6",
+        "android_client_info": {
+          "package_name": "com.cloudvault.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr3l6sCZdKeXzvEasEPZtsLemQAGXg4SY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
