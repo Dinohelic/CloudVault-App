@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">VaultShare</string>
+
+    <string-array name="sort_options_array">
+        <item>Name</item>
+        <item>Date</item>
+        <item>Size</item>
+    </string-array>
+
+    <!-- Splash Screen -->
+    <string name="splash_app_name">VaultShare</string>
+
+    <!-- Login Screen -->
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="google_sign_in_button">Sign in with Google</string>
+
+    <!-- Main Dashboard -->
+    <string name="title_home">Home</string>
+    <string name="title_vault">Vault</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_settings">Settings</string>
+
+    <!-- Vault Fragment -->
+    <string name="filter_by_type">Filter by type:</string>
+    <string name="radio_all">All</string>
+    <string name="radio_docs">Documents</string>
+    <string name="radio_images">Images</string>
+    <string name="sort_by">Sort by:</string>
+    <string name="select_all">Select all</string>
+    <string name="vault_content_placeholder">Vault content would be here</string>
+
+</resources>
