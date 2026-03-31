@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1062568562602",
+    "firebase_url": "https://self-drive-17ee0-default-rtdb.firebaseio.com",
+    "project_id": "self-drive-17ee0",
+    "storage_bucket": "self-drive-17ee0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1062568562602:android:dcd14cf2a7e1530d0965d3",
+        "android_client_info": {
+          "package_name": "com.cloudvault.cloudvault"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1062568562602-0mu6lcuguc0v4qp9k8tsgnk9elg5qv7r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYO5AKvPphZ2IYoBrbpsTNqmUYxidWYs8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1062568562602-0mu6lcuguc0v4qp9k8tsgnk9elg5qv7r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
