@@ -2,6 +2,7 @@
     <string name="app_name">VaultShare</string>
     <string name="default_web_client_id" translatable="false">1062568562602-0mu6lcuguc0v4qp9k8tsgnk9elg5qv7r.apps.googleusercontent.com</string>
     <string name="file_icon_description">File type icon</string>
+    <string name="file_viewer_image">Displayed file content</string>
 
     <string-array name="sort_options_array">
         <item>Name</item>

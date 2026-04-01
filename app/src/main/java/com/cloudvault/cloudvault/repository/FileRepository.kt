@@ -2,6 +2,7 @@ package com.cloudvault.cloudvault.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.cloudvault.cloudvault.BuildConfig
 import com.cloudvault.cloudvault.model.FileModel
 import com.cloudvault.cloudvault.network.SupabaseClient
@@ -67,5 +68,25 @@ class FileRepository {
 
     suspend fun saveMetadata(fileModel: FileModel) {
         filesCollection.add(fileModel).await()
+    }
+    
+    suspend fun renameFile(fileId: String, newName: String) {
+        filesCollection.document(fileId).update("name", newName).await()
+    }
+
+    suspend fun deleteFile(file: FileModel) {
+        withContext(Dispatchers.IO) {
+            val fileName = file.url.substringAfterLast("/")
+            val bearerToken = "Bearer ${BuildConfig.SUPABASE_ANON_KEY}"
+            
+            Log.d("FileRepository", "Attempting to delete. Using code with 404 check.")
+
+            val response = supabaseService.deleteFile(bearerToken, fileName)
+            if (!response.isSuccessful && response.code() != 404) { // Ignore if already not found
+                throw Exception("Failed to delete file from storage: ${response.errorBody()?.string()}")
+            }
+
+            filesCollection.document(file.id).delete().await()
+        }
     }
 }

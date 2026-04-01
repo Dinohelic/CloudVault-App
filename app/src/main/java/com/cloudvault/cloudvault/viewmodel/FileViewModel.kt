@@ -1,7 +1,9 @@
 package com.cloudvault.cloudvault.viewmodel
 
+import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
 import android.provider.OpenableColumns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -26,6 +28,12 @@ sealed class UploadState {
     data class Error(val message: String) : UploadState()
 }
 
+sealed class FileActionState {
+    object Idle : FileActionState()
+    data class Success(val message: String) : FileActionState()
+    data class Error(val message: String) : FileActionState()
+}
+
 class FileViewModel : ViewModel() {
 
     private val fileRepository = FileRepository()
@@ -36,6 +44,9 @@ class FileViewModel : ViewModel() {
 
     private val _uploadState = MutableLiveData<UploadState>(UploadState.Idle)
     val uploadState: LiveData<UploadState> = _uploadState
+    
+    private val _fileActionState = MutableLiveData<FileActionState>(FileActionState.Idle)
+    val fileActionState: LiveData<FileActionState> = _fileActionState
 
     init {
         fetchFiles()
@@ -65,7 +76,7 @@ class FileViewModel : ViewModel() {
                 val fileMetadata = FileModel(
                     name = fileName,
                     size = getFileSize(context, fileUri),
-                    type = context.contentResolver.getType(fileUri)?.substringAfterLast('/') ?: "unknown",
+                    type = context.contentResolver.getType(fileUri) ?: "application/octet-stream",
                     url = fileUrl,
                     timestamp = System.currentTimeMillis(),
                     userId = auth.currentUser!!.uid
@@ -76,6 +87,50 @@ class FileViewModel : ViewModel() {
                 _uploadState.value = UploadState.Error(e.message ?: "Upload failed")
             }
         }
+    }
+
+    fun downloadFile(context: Context, file: FileModel) {
+        try {
+            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val request = DownloadManager.Request(Uri.parse(file.url))
+                .setTitle(file.name)
+                .setDescription("Downloading file...")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, file.name)
+            
+            downloadManager.enqueue(request)
+        } catch (e: Exception) {
+            _fileActionState.value = FileActionState.Error("Download failed: ${e.message}")
+        }
+    }
+    
+    fun renameFile(fileId: String, newName: String) {
+        viewModelScope.launch {
+            try {
+                if (newName.isBlank()) {
+                    throw IllegalArgumentException("File name cannot be empty.")
+                }
+                fileRepository.renameFile(fileId, newName)
+                _fileActionState.value = FileActionState.Success("File renamed successfully")
+            } catch (e: Exception) {
+                _fileActionState.value = FileActionState.Error(e.message ?: "Failed to rename file")
+            }
+        }
+    }
+
+    fun deleteFile(file: FileModel) {
+        viewModelScope.launch {
+            try {
+                fileRepository.deleteFile(file)
+                // Success message is not needed, list will update automatically
+            } catch (e: Exception) {
+                _fileActionState.value = FileActionState.Error(e.message ?: "Failed to delete file")
+            }
+        }
+    }
+
+    fun clearActionState() {
+        _fileActionState.value = FileActionState.Idle
     }
 
     private fun getFileName(context: Context, uri: Uri): String {
