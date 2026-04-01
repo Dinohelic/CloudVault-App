@@ -1,19 +1,28 @@
 package com.cloudvault.cloudvault.repository
 
+import android.content.Context
+import android.net.Uri
+import com.cloudvault.cloudvault.BuildConfig
 import com.cloudvault.cloudvault.model.FileModel
+import com.cloudvault.cloudvault.network.SupabaseClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class FileRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val filesCollection = firestore.collection("files")
+    private val supabaseService = SupabaseClient.service
 
     fun getFiles(): Flow<List<FileModel>> = callbackFlow {
         val userId = auth.currentUser?.uid ?: run {
@@ -37,16 +46,26 @@ class FileRepository {
         awaitClose { listener.remove() }
     }
 
-    suspend fun addDummyFile() {
-        val userId = auth.currentUser?.uid ?: return
-        val dummyFile = FileModel(
-            name = "Document_${System.currentTimeMillis()}.pdf",
-            size = "1.5 MB",
-            type = "pdf",
-            url = "https://example.com/dummy.pdf",
-            timestamp = System.currentTimeMillis(),
-            userId = userId
-        )
-        filesCollection.add(dummyFile).await()
+    suspend fun uploadFile(context: Context, fileUri: Uri, fileName: String): String {
+        return withContext(Dispatchers.IO) {
+            val bearerToken = "Bearer ${BuildConfig.SUPABASE_ANON_KEY}"
+            val inputStream = context.contentResolver.openInputStream(fileUri)
+            val fileBytes = inputStream!!.readBytes()
+            inputStream.close()
+            
+            val requestBody = fileBytes.toRequestBody("application/octet-stream".toMediaTypeOrNull())
+            
+            val response = supabaseService.uploadFile(bearerToken, fileName, requestBody)
+
+            if (response.isSuccessful) {
+                "${BuildConfig.SUPABASE_URL}/storage/v1/object/public/vault-files/$fileName"
+            } else {
+                throw Exception("Supabase Upload Failed: ${response.errorBody()?.string()}")
+            }
+        }
+    }
+
+    suspend fun saveMetadata(fileModel: FileModel) {
+        filesCollection.add(fileModel).await()
     }
 }

@@ -1,10 +1,13 @@
 package com.cloudvault.cloudvault.ui.fragments
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,6 +16,7 @@ import com.cloudvault.cloudvault.adapter.FileAdapter
 import com.cloudvault.cloudvault.databinding.FragmentHomeBinding
 import com.cloudvault.cloudvault.viewmodel.FileListState
 import com.cloudvault.cloudvault.viewmodel.FileViewModel
+import com.cloudvault.cloudvault.viewmodel.UploadState
 
 class HomeFragment : Fragment() {
 
@@ -21,6 +25,14 @@ class HomeFragment : Fragment() {
 
     private val fileViewModel: FileViewModel by viewModels()
     private lateinit var fileAdapter: FileAdapter
+
+    private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                fileViewModel.uploadFile(requireContext(), uri)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,7 +46,8 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         setupFab()
-        observeViewModel()
+        observeFileList()
+        observeUploadState()
     }
 
     private fun setupRecyclerView() {
@@ -54,36 +67,39 @@ class HomeFragment : Fragment() {
 
     private fun setupFab() {
         binding.fabAddFile.setOnClickListener {
-            fileViewModel.addDummyFile()
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" }
+            filePickerLauncher.launch(intent)
         }
     }
 
-    private fun observeViewModel() {
+    private fun observeFileList() {
         fileViewModel.fileListState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is FileListState.Loading -> {
-                    binding.progressBar.isVisible = true
-                    binding.emptyView.isVisible = false
-                    binding.recyclerView.isVisible = false
-                }
-                is FileListState.Success -> {
-                    binding.progressBar.isVisible = false
-                    if (state.files.isEmpty()) {
-                        binding.emptyView.isVisible = true
-                        binding.recyclerView.isVisible = false
-                    } else {
-                        binding.emptyView.isVisible = false
+            // Temporarily disable progress bar from here to let upload state control it
+            // binding.progressBar.isVisible = state is FileListState.Loading
+            binding.emptyView.isVisible = state is FileListState.Success && state.files.isEmpty()
+            binding.recyclerView.isVisible = state is FileListState.Success && state.files.isNotEmpty()
 
-                        binding.recyclerView.isVisible = true
-                        fileAdapter.submitList(state.files)
-                    }
+            if (state is FileListState.Success) {
+                fileAdapter.submitList(state.files)
+            } else if (state is FileListState.Error) {
+                Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun observeUploadState() {
+        fileViewModel.uploadState.observe(viewLifecycleOwner) { state ->
+            binding.progressBar.isVisible = state is UploadState.Uploading
+            binding.fabAddFile.isEnabled = state !is UploadState.Uploading
+
+            when (state) {
+                is UploadState.Success -> {
+                    Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
                 }
-                is FileListState.Error -> {
-                    binding.progressBar.isVisible = false
-                    binding.emptyView.isVisible = false
-                    binding.recyclerView.isVisible = false
-                    Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
+                is UploadState.Error -> {
+                    Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
                 }
+                else -> {} // Idle or Uploading
             }
         }
     }
