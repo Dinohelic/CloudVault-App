@@ -55,7 +55,7 @@ class FileViewModel : ViewModel() {
     private fun fetchFiles() {
         viewModelScope.launch {
             _fileListState.value = FileListState.Loading
-            fileRepository.getFiles()
+            fileRepository.getFiles(fetchFromVault = false)
                 .catch { e ->
                     _fileListState.value = FileListState.Error(e.message ?: "Failed to fetch files")
                 }
@@ -79,7 +79,8 @@ class FileViewModel : ViewModel() {
                     type = context.contentResolver.getType(fileUri) ?: "application/octet-stream",
                     url = fileUrl,
                     timestamp = System.currentTimeMillis(),
-                    userId = auth.currentUser!!.uid
+                    userId = auth.currentUser!!.uid,
+                    isInVault = false // New files are not in vault by default
                 )
                 fileRepository.saveMetadata(fileMetadata)
                 _uploadState.value = UploadState.Success("File uploaded successfully!")
@@ -122,9 +123,19 @@ class FileViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 fileRepository.deleteFile(file)
-                // Success message is not needed, list will update automatically
             } catch (e: Exception) {
                 _fileActionState.value = FileActionState.Error(e.message ?: "Failed to delete file")
+            }
+        }
+    }
+    
+    fun moveToVault(fileId: String) {
+        viewModelScope.launch {
+            try {
+                fileRepository.setVaultStatus(fileId, true)
+                _fileActionState.value = FileActionState.Success("Moved to Vault")
+            } catch (e: Exception) {
+                _fileActionState.value = FileActionState.Error(e.message ?: "Failed to move file")
             }
         }
     }

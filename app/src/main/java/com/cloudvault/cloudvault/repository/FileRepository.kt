@@ -25,7 +25,7 @@ class FileRepository {
     private val filesCollection = firestore.collection("files")
     private val supabaseService = SupabaseClient.service
 
-    fun getFiles(): Flow<List<FileModel>> = callbackFlow {
+    fun getFiles(fetchFromVault: Boolean): Flow<List<FileModel>> = callbackFlow {
         val userId = auth.currentUser?.uid ?: run {
             close(IllegalStateException("User not logged in"))
             return@callbackFlow
@@ -33,6 +33,7 @@ class FileRepository {
 
         val listener = filesCollection
             .whereEqualTo("userId", userId)
+            .whereEqualTo("isInVault", fetchFromVault)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -46,7 +47,11 @@ class FileRepository {
             }
         awaitClose { listener.remove() }
     }
-
+    
+    suspend fun setVaultStatus(fileId: String, isInVault: Boolean) {
+        filesCollection.document(fileId).update("isInVault", isInVault).await()
+    }
+    
     suspend fun uploadFile(context: Context, fileUri: Uri, fileName: String): String {
         return withContext(Dispatchers.IO) {
             val bearerToken = "Bearer ${BuildConfig.SUPABASE_ANON_KEY}"
@@ -67,7 +72,9 @@ class FileRepository {
     }
 
     suspend fun saveMetadata(fileModel: FileModel) {
-        filesCollection.add(fileModel).await()
+        val fileMap = fileModel.toMap()
+        Log.d("FileRepository", "Saving metadata to Firestore: $fileMap")
+        filesCollection.add(fileMap).await()
     }
     
     suspend fun renameFile(fileId: String, newName: String) {
@@ -82,7 +89,7 @@ class FileRepository {
             Log.d("FileRepository", "Attempting to delete. Using code with 404 check.")
 
             val response = supabaseService.deleteFile(bearerToken, fileName)
-            if (!response.isSuccessful && response.code() != 404) { // Ignore if already not found
+            if (!response.isSuccessful && response.code() != 404) {
                 throw Exception("Failed to delete file from storage: ${response.errorBody()?.string()}")
             }
 

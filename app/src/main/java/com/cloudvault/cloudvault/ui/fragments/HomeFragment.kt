@@ -80,15 +80,16 @@ class HomeFragment : Fragment() {
     }
 
     private fun showOptionsDialog(file: FileModel) {
-        val options = arrayOf("Rename", "Share URL", "Download", "Delete")
+        val options = arrayOf("Move to Vault", "Rename", "Share URL", "Download", "Delete")
         AlertDialog.Builder(requireContext())
             .setTitle(file.name)
             .setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> showRenameDialog(file)
-                    1 -> shareFile(file)
-                    2 -> downloadFile(file)
-                    3 -> showDeleteConfirmationDialog(file)
+                    0 -> fileViewModel.moveToVault(file.id)
+                    1 -> showRenameDialog(file)
+                    2 -> shareFile(file)
+                    3 -> downloadFile(file)
+                    4 -> showDeleteConfirmationDialog(file)
                 }
                 dialog.dismiss()
             }
