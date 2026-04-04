@@ -34,10 +34,9 @@ class FileAdapter(
             binding.fileName.text = file.name
             binding.fileSize.text = file.size
             
-            // Set icon based on file type
-            val iconRes = when (file.type) {
-                "pdf" -> R.drawable.ic_file_pdf
-                "jpg", "png" -> R.drawable.ic_file_image
+            val iconRes = when (file.type.substringBefore('/')) {
+                "image" -> R.drawable.ic_file_image
+                "application" -> if (file.type.contains("pdf")) R.drawable.ic_file_pdf else R.drawable.ic_file_generic
                 else -> R.drawable.ic_file_generic
             }
             binding.icon.setImageResource(iconRes)

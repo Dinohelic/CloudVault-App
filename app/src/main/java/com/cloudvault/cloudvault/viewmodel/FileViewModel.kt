@@ -55,13 +55,24 @@ class FileViewModel : ViewModel() {
     private fun fetchFiles() {
         viewModelScope.launch {
             _fileListState.value = FileListState.Loading
-            fileRepository.getFiles(fetchFromVault = false)
+            fileRepository.getFiles(fetchFromTrash = false)
                 .catch { e ->
                     _fileListState.value = FileListState.Error(e.message ?: "Failed to fetch files")
                 }
                 .collect { files ->
                     _fileListState.value = FileListState.Success(files)
                 }
+        }
+    }
+
+    fun moveToTrash(fileId: String) {
+        viewModelScope.launch {
+            try {
+                fileRepository.setTrashStatus(fileId, true)
+                _fileActionState.value = FileActionState.Success("Moved to Trash")
+            } catch (e: Exception) {
+                _fileActionState.value = FileActionState.Error(e.message ?: "Failed to move to trash")
+            }
         }
     }
 
@@ -80,7 +91,7 @@ class FileViewModel : ViewModel() {
                     url = fileUrl,
                     timestamp = System.currentTimeMillis(),
                     userId = auth.currentUser!!.uid,
-                    isInVault = false // New files are not in vault by default
+                    isInTrash = false
                 )
                 fileRepository.saveMetadata(fileMetadata)
                 _uploadState.value = UploadState.Success("File uploaded successfully!")
@@ -115,27 +126,6 @@ class FileViewModel : ViewModel() {
                 _fileActionState.value = FileActionState.Success("File renamed successfully")
             } catch (e: Exception) {
                 _fileActionState.value = FileActionState.Error(e.message ?: "Failed to rename file")
-            }
-        }
-    }
-
-    fun deleteFile(file: FileModel) {
-        viewModelScope.launch {
-            try {
-                fileRepository.deleteFile(file)
-            } catch (e: Exception) {
-                _fileActionState.value = FileActionState.Error(e.message ?: "Failed to delete file")
-            }
-        }
-    }
-    
-    fun moveToVault(fileId: String) {
-        viewModelScope.launch {
-            try {
-                fileRepository.setVaultStatus(fileId, true)
-                _fileActionState.value = FileActionState.Success("Moved to Vault")
-            } catch (e: Exception) {
-                _fileActionState.value = FileActionState.Error(e.message ?: "Failed to move file")
             }
         }
     }

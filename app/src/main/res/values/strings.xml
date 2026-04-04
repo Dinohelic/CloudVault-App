@@ -23,6 +23,8 @@
     <!-- Main Dashboard -->
     <string name="title_home">Home</string>
     <string name="title_vault">Vault</string>
+    <string name="title_favorites">Favorites</string>
+    <string name="title_trash">Trash</string>
     <string name="title_profile">Profile</string>
     <string name="title_settings">Settings</string>
 

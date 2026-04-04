@@ -25,7 +25,7 @@ class FileRepository {
     private val filesCollection = firestore.collection("files")
     private val supabaseService = SupabaseClient.service
 
-    fun getFiles(fetchFromVault: Boolean): Flow<List<FileModel>> = callbackFlow {
+    fun getFiles(fetchFromTrash: Boolean): Flow<List<FileModel>> = callbackFlow {
         val userId = auth.currentUser?.uid ?: run {
             close(IllegalStateException("User not logged in"))
             return@callbackFlow
@@ -33,7 +33,7 @@ class FileRepository {
 
         val listener = filesCollection
             .whereEqualTo("userId", userId)
-            .whereEqualTo("isInVault", fetchFromVault)
+            .whereEqualTo("isInTrash", fetchFromTrash)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -41,15 +41,14 @@ class FileRepository {
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    val files = snapshot.toObjects(FileModel::class.java)
-                    trySend(files)
+                    trySend(snapshot.toObjects(FileModel::class.java))
                 }
             }
         awaitClose { listener.remove() }
     }
-    
-    suspend fun setVaultStatus(fileId: String, isInVault: Boolean) {
-        filesCollection.document(fileId).update("isInVault", isInVault).await()
+
+    suspend fun setTrashStatus(fileId: String, isInTrash: Boolean) {
+        filesCollection.document(fileId).update("isInTrash", isInTrash).await()
     }
     
     suspend fun uploadFile(context: Context, fileUri: Uri, fileName: String): String {
@@ -81,13 +80,11 @@ class FileRepository {
         filesCollection.document(fileId).update("name", newName).await()
     }
 
-    suspend fun deleteFile(file: FileModel) {
+    suspend fun deleteFilePermanently(file: FileModel) {
         withContext(Dispatchers.IO) {
             val fileName = file.url.substringAfterLast("/")
             val bearerToken = "Bearer ${BuildConfig.SUPABASE_ANON_KEY}"
             
-            Log.d("FileRepository", "Attempting to delete. Using code with 404 check.")
-
             val response = supabaseService.deleteFile(bearerToken, fileName)
             if (!response.isSuccessful && response.code() != 404) {
                 throw Exception("Failed to delete file from storage: ${response.errorBody()?.string()}")

@@ -11,12 +11,9 @@ data class FileModel(
     val type: String = "",
     val url: String = "",
     val timestamp: Long = 0,
-    val isFavorite: Boolean = false,
     val isInTrash: Boolean = false,
-    val isInVault: Boolean = false,
     val userId: String = ""
 ) {
-    // Manual converter to ensure all fields are included
     @Exclude
     fun toMap(): Map<String, Any> {
         return mapOf(
@@ -25,9 +22,7 @@ data class FileModel(
             "type" to type,
             "url" to url,
             "timestamp" to timestamp,
-            "isFavorite" to isFavorite,
             "isInTrash" to isInTrash,
-            "isInVault" to isInVault,
             "userId" to userId
         )
     }

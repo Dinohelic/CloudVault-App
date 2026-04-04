@@ -42,10 +42,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -80,16 +77,15 @@ class HomeFragment : Fragment() {
     }
 
     private fun showOptionsDialog(file: FileModel) {
-        val options = arrayOf("Move to Vault", "Rename", "Share URL", "Download", "Delete")
+        val options = arrayOf("Rename", "Share URL", "Download", "Move to Trash")
         AlertDialog.Builder(requireContext())
             .setTitle(file.name)
             .setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> fileViewModel.moveToVault(file.id)
-                    1 -> showRenameDialog(file)
-                    2 -> shareFile(file)
-                    3 -> downloadFile(file)
-                    4 -> showDeleteConfirmationDialog(file)
+                    0 -> showRenameDialog(file)
+                    1 -> shareFile(file)
+                    2 -> downloadFile(file)
+                    3 -> fileViewModel.moveToTrash(file.id)
                 }
                 dialog.dismiss()
             }
@@ -107,18 +103,6 @@ class HomeFragment : Fragment() {
             .setPositiveButton("Rename") { dialog, _ ->
                 val newName = editText.text.toString()
                 fileViewModel.renameFile(file.id, newName)
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-    
-    private fun showDeleteConfirmationDialog(file: FileModel) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete File")
-            .setMessage("Are you sure you want to delete '${file.name}'? This cannot be undone.")
-            .setPositiveButton("Delete") { dialog, _ ->
-                fileViewModel.deleteFile(file)
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel", null)
@@ -174,7 +158,7 @@ class HomeFragment : Fragment() {
                     Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
                 }
                 is UploadState.Error -> {
-                    Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
                 }
                 else -> {} // Idle
             }
