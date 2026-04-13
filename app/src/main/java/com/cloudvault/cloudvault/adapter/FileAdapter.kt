@@ -1,5 +1,6 @@
 package com.cloudvault.cloudvault.adapter
 
+import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -32,8 +33,8 @@ class FileAdapter(
     class FileViewHolder(private val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(file: FileModel) {
             binding.fileName.text = file.name
-            binding.fileSize.text = file.size
-            
+            binding.fileSize.text = Formatter.formatFileSize(itemView.context, file.sizeInBytes) // <-- CORRECTED
+
             val iconRes = when (file.type.substringBefore('/')) {
                 "image" -> R.drawable.ic_file_image
                 "application" -> if (file.type.contains("pdf")) R.drawable.ic_file_pdf else R.drawable.ic_file_generic

@@ -86,7 +86,7 @@ class FileViewModel : ViewModel() {
                 
                 val fileMetadata = FileModel(
                     name = fileName,
-                    size = getFileSize(context, fileUri),
+                    sizeInBytes = getFileSizeInBytes(context, fileUri),
                     type = context.contentResolver.getType(fileUri) ?: "application/octet-stream",
                     url = fileUrl,
                     timestamp = System.currentTimeMillis(),
@@ -159,12 +159,12 @@ class FileViewModel : ViewModel() {
         return result
     }
     
-    private fun getFileSize(context: Context, uri: Uri): String {
-        val cursor = context.contentResolver.query(uri, null, null, null, null)
-        val sizeIndex = cursor!!.getColumnIndex(OpenableColumns.SIZE)
-        cursor.moveToFirst()
-        val size = cursor.getLong(sizeIndex)
-        cursor.close()
-        return android.text.format.Formatter.formatFileSize(context, size)
+    private fun getFileSizeInBytes(context: Context, uri: Uri): Long {
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+            cursor.moveToFirst()
+            return cursor.getLong(sizeIndex)
+        }
+        return 0L
     }
 }

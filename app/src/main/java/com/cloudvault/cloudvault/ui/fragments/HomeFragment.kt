@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -33,6 +34,7 @@ class HomeFragment : Fragment() {
 
     private val fileViewModel: FileViewModel by viewModels()
     private lateinit var fileAdapter: FileAdapter
+    private var allFiles = listOf<FileModel>()
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -50,6 +52,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
+        setupSearchView()
         setupFab()
         observeFileList()
         observeUploadState()
@@ -73,6 +76,30 @@ class HomeFragment : Fragment() {
         binding.recyclerView.apply {
             adapter = fileAdapter
             layoutManager = LinearLayoutManager(context)
+        }
+    }
+    
+    private fun setupSearchView() {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterFiles(newText)
+                return true
+            }
+        })
+    }
+
+    private fun filterFiles(query: String?) {
+        if (query.isNullOrBlank()) {
+            fileAdapter.submitList(allFiles)
+        } else {
+            val filteredList = allFiles.filter {
+                it.name.contains(query, ignoreCase = true)
+            }
+            fileAdapter.submitList(filteredList)
         }
     }
 
@@ -136,13 +163,21 @@ class HomeFragment : Fragment() {
             if (fileViewModel.uploadState.value !is UploadState.Uploading) {
                  binding.progressBar.isVisible = state is FileListState.Loading
             }
-            binding.emptyView.isVisible = state is FileListState.Success && state.files.isEmpty()
-            binding.recyclerView.isVisible = state is FileListState.Success && state.files.isNotEmpty()
-
+            
             if (state is FileListState.Success) {
-                fileAdapter.submitList(state.files)
+                allFiles = state.files
+                val query = binding.searchView.query.toString()
+                if (query.isBlank()) {
+                    binding.emptyView.isVisible = allFiles.isEmpty()
+                    binding.recyclerView.isVisible = allFiles.isNotEmpty()
+                    fileAdapter.submitList(allFiles)
+                } else {
+                    filterFiles(query)
+                }
             } else if (state is FileListState.Error) {
                 Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
+                binding.emptyView.isVisible = true
+                binding.recyclerView.isVisible = false
             }
         }
     }

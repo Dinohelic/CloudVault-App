@@ -74,8 +74,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     
     // Image Loading
-    implementation("com.github.bumptech.glide:glide:4.12.0")
-    kapt("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
 
 
     // Firebase
