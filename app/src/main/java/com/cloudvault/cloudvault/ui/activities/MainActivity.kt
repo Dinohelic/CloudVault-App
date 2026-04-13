@@ -12,31 +12,21 @@ import com.cloudvault.cloudvault.R
 import com.cloudvault.cloudvault.ui.fragments.HomeFragment
 import com.cloudvault.cloudvault.ui.fragments.ProfileFragment
 import com.cloudvault.cloudvault.ui.fragments.SettingsFragment
-import com.cloudvault.cloudvault.ui.fragments.VaultFragment
+import com.cloudvault.cloudvault.ui.fragments.TrashFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
     private val onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+        var selectedFragment: Fragment = HomeFragment()
         when (item.itemId) {
-            R.id.navigation_home -> {
-                loadFragment(HomeFragment())
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_vault -> {
-                loadFragment(VaultFragment())
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_profile -> {
-                loadFragment(ProfileFragment())
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_settings -> {
-                loadFragment(SettingsFragment())
-                return@OnNavigationItemSelectedListener true
-            }
+            R.id.navigation_home -> selectedFragment = HomeFragment()
+            R.id.navigation_trash -> selectedFragment = TrashFragment()
+            R.id.navigation_profile -> selectedFragment = ProfileFragment()
+            R.id.navigation_settings -> selectedFragment = SettingsFragment()
         }
-        false
+        loadFragment(selectedFragment)
+        true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

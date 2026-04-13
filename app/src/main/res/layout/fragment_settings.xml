@@ -21,4 +21,11 @@
         android:text="Dark Theme"
         android:textSize="16sp" />
 
+    <Button
+        android:id="@+id/logoutButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Logout" />
+
 </LinearLayout>

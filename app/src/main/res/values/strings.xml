@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">VaultShare</string>
+    <string name="default_web_client_id" translatable="false">1062568562602-0mu6lcuguc0v4qp9k8tsgnk9elg5qv7r.apps.googleusercontent.com</string>
+    <string name="file_icon_description">File type icon</string>
+    <string name="file_viewer_image">Displayed file content</string>
 
     <string-array name="sort_options_array">
         <item>Name</item>
@@ -14,11 +17,14 @@
     <string name="email_hint">Email</string>
     <string name="password_hint">Password</string>
     <string name="login_button">Login</string>
+    <string name="signup_button">Sign Up</string>
     <string name="google_sign_in_button">Sign in with Google</string>
 
     <!-- Main Dashboard -->
     <string name="title_home">Home</string>
     <string name="title_vault">Vault</string>
+    <string name="title_favorites">Favorites</string>
+    <string name="title_trash">Trash</string>
     <string name="title_profile">Profile</string>
     <string name="title_settings">Settings</string>
 
@@ -30,5 +36,11 @@
     <string name="sort_by">Sort by:</string>
     <string name="select_all">Select all</string>
     <string name="vault_content_placeholder">Vault content would be here</string>
+
+    <!-- Home Fragment -->
+    <string name="header_my_files">My Files</string>
+    <string name="search_files_hint">Search files</string>
+    <string name="empty_state_no_files">No files uploaded yet</string>
+    <string name="add_file">Add File</string>
 
 </resources>

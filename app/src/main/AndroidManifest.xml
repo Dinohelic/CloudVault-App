@@ -2,7 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
 
     <application
         android:name=".VaultShareApp"
@@ -28,8 +32,18 @@
             android:theme="@style/Theme.VaultShare.NoActionBar" />
         <activity
             android:name=".ui.activities.MainActivity"
+            android:windowSoftInputMode="adjustPan"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.VaultShare" />
+        <activity
+            android:name=".ui.activities.FileViewerActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.VaultShare" />
+        <activity
+            android:name=".ui.activities.PinEntryActivity"
+            android:label="Vault"
+            android:theme="@style/Theme.VaultShare.NoActionBar" />
     </application>
 
 </manifest>
