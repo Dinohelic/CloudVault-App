@@ -25,32 +25,45 @@ class TrashFragment : Fragment() {
     private val trashViewModel: TrashViewModel by viewModels()
     private lateinit var fileAdapter: FileAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentTrashBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupRecyclerView()
         observeViewModel()
     }
 
     private fun setupRecyclerView() {
         fileAdapter = FileAdapter(
-            onItemClick = { file ->
-                Toast.makeText(context, "Restore the file to perform actions.", Toast.LENGTH_SHORT).show()
+            onItemClick = {
+                Toast.makeText(
+                    context,
+                    "Restore the file to perform actions.",
+                    Toast.LENGTH_SHORT
+                ).show()
             },
             onItemLongClick = { file ->
                 showTrashOptionsDialog(file)
             }
         )
-        binding.recyclerView.adapter = fileAdapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+
+        binding.recyclerView.apply {
+            adapter = fileAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
     }
 
     private fun showTrashOptionsDialog(file: FileModel) {
         val options = arrayOf("Restore", "Delete Permanently")
+
         AlertDialog.Builder(requireContext())
             .setTitle(file.name)
             .setItems(options) { dialog, which ->
@@ -77,24 +90,51 @@ class TrashFragment : Fragment() {
 
     private fun observeViewModel() {
         trashViewModel.fileListState.observe(viewLifecycleOwner) { state ->
-            binding.progressBar.isVisible = state is FileListState.Loading
-            binding.emptyView.isVisible = state is FileListState.Success && state.files.isEmpty()
-            binding.recyclerView.isVisible = state is FileListState.Success && state.files.isNotEmpty()
 
-            if (state is FileListState.Success) {
-                fileAdapter.submitList(state.files)
-            } else if (state is FileListState.Error) {
-                Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
+            binding.progressBar.isVisible = state is FileListState.Loading
+
+            when (state) {
+                is FileListState.Success -> {
+                    fileAdapter.submitList(state.files)
+
+                    val isEmpty = state.files.isEmpty()
+
+                    binding.emptyView.isVisible = isEmpty
+                    binding.recyclerView.isVisible = !isEmpty
+                }
+
+                is FileListState.Error -> {
+                    Toast.makeText(
+                        context,
+                        "Error: ${state.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    binding.emptyView.isVisible = true
+                    binding.recyclerView.isVisible = false
+                }
+
+                is FileListState.Loading -> Unit
             }
         }
-        
+
         trashViewModel.fileActionState.observe(viewLifecycleOwner) { state ->
-            if (state is FileActionState.Success) {
-                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
-                trashViewModel.clearActionState()
-            } else if (state is FileActionState.Error) {
-                Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
-                trashViewModel.clearActionState()
+            when (state) {
+                is FileActionState.Success -> {
+                    Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                    trashViewModel.clearActionState()
+                }
+
+                is FileActionState.Error -> {
+                    Toast.makeText(
+                        context,
+                        "Error: ${state.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    trashViewModel.clearActionState()
+                }
+
+                FileActionState.Idle -> Unit
             }
         }
     }

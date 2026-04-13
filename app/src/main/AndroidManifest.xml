@@ -32,6 +32,7 @@
             android:theme="@style/Theme.VaultShare.NoActionBar" />
         <activity
             android:name=".ui.activities.MainActivity"
+            android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.VaultShare" />

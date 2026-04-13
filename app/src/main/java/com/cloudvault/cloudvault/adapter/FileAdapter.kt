@@ -28,19 +28,25 @@ class FileAdapter(
             onItemLongClick(file)
             true
         }
+        // Smooth fade-in animation
+        holder.itemView.alpha = 0f
+        holder.itemView.animate()
+            .alpha(1f)
+            .setDuration(300)
+            .start()
     }
 
     class FileViewHolder(private val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(file: FileModel) {
-            binding.fileName.text = file.name
-            binding.fileSize.text = Formatter.formatFileSize(itemView.context, file.sizeInBytes) // <-- CORRECTED
+            binding.tvFileName.text = file.name
+            binding.tvFileSize.text = Formatter.formatFileSize(itemView.context, file.sizeInBytes)
 
             val iconRes = when (file.type.substringBefore('/')) {
                 "image" -> R.drawable.ic_file_image
                 "application" -> if (file.type.contains("pdf")) R.drawable.ic_file_pdf else R.drawable.ic_file_generic
                 else -> R.drawable.ic_file_generic
             }
-            binding.icon.setImageResource(iconRes)
+            binding.fileIcon.setImageResource(iconRes)
         }
     }
 
