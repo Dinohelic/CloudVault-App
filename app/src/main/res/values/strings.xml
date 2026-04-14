@@ -19,6 +19,12 @@
     <string name="login_button">Login</string>
     <string name="signup_button">Sign Up</string>
     <string name="google_sign_in_button">Sign in with Google</string>
+    <string name="logo_content_desc">App Logo</string>
+    <string name="subtitle">Your Files Anywhere Anytime</string>
+    <string name="login_title">Sign In</string>
+    <string name="login_email_hint">Email Address</string>
+    <string name="login_password_hint">Enter Password</string>
+    <string name="continue_with">Continue with</string>
 
     <!-- Main Dashboard -->
     <string name="title_home">Home</string>
